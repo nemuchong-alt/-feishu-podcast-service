@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: feishu-podcast-service
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: FEISHU_APP_ID
+        sync: false
+      - key: FEISHU_APP_SECRET
+        sync: false
+      - key: FEISHU_DATABASE_ID
+        sync: false
+      - key: FEISHU_TABLE_ID_PODCAST
+        sync: false
+      - key: FEISHU_TABLE_ID_MAIN_POINTS
+        sync: false
+      - key: FEISHU_TABLE_ID_CONCEPTS
+        sync: false
+      - key: FEISHU_TABLE_ID_RESOURCES
+        sync: false
