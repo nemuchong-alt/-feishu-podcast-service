@@ -1,6 +1,23 @@
 # app/schemas/podcast.py
-from typing import Optional
-from pydantic import BaseModel, Field
+from typing import Optional, Union
+from pydantic import BaseModel, Field, field_validator
+
+
+def parse_bool(value: Union[bool, str, int, None]) -> bool:
+    """将各种格式的值转换为布尔值"""
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return bool(value)
+    if isinstance(value, str):
+        value_lower = value.lower().strip()
+        if value_lower in ("true", "是", "yes", "1"):
+            return True
+        if value_lower in ("false", "否", "no", "0", ""):
+            return False
+    return False
 
 
 class PodcastData(BaseModel):
@@ -14,7 +31,12 @@ class MainPoint(BaseModel):
     seq: int = Field(description="主观点序号")
     content: str = Field(default="", description="主观点内容")
     tags: list[str] = Field(default_factory=list, description="主观点标签")
-    important: bool = Field(default=False, description="是否重要")
+    important: Union[bool, str, int, None] = Field(default=False, description="是否重要")
+
+    @field_validator("important", mode="before")
+    @classmethod
+    def parse_important(cls, v):
+        return parse_bool(v)
 
 
 class Concept(BaseModel):
