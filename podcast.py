@@ -27,16 +27,28 @@ class PodcastData(BaseModel):
 
 
 class MainPoint(BaseModel):
-    """主观点"""
-    seq: int = Field(description="主观点序号")
-    content: str = Field(default="", description="主观点内容")
-    tags: list[str] = Field(default_factory=list, description="主观点标签")
-    important: Union[bool, str, int, None] = Field(default=False, description="是否重要")
+      """主观点"""
+      seq: int = Field(description="主观点序号")
+      content: str = Field(default="", description="主观点内容")
+      tags: list[str] = Field(default_factory=list, description="主观点标签")
+      important: Union[bool, str, int, None] = Field(default=False, description="是否重要")
 
-    @field_validator("important", mode="before")
-    @classmethod
-    def parse_important(cls, v):
-        return parse_bool(v)
+      @field_validator("important", mode="before")
+      @classmethod
+      def parse_important(cls, v):
+          if v is None:
+              return False
+          if isinstance(v, bool):
+              return v
+          if isinstance(v, int):
+              return bool(v)
+          if isinstance(v, str):
+              value_lower = v.lower().strip()
+              if value_lower in ("true", "是", "yes", "1"):
+                  return True
+              if value_lower in ("false", "否", "no", "0", ""):
+                  return False
+          return False
 
 
 class Concept(BaseModel):
