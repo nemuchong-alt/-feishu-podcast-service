@@ -1,0 +1,32 @@
+{
+  "podcast_title": "测试播客 E01 - Bool解析验证",
+  "display_markdown": "### 测试\n- 验证 important 字段是否接受是/否",
+  "structured_json": {
+    "podcast": {
+      "summary": "测试 important 字段的是/否解析",
+      "relisten_level": "中"
+    },
+    "main_points": [
+      {
+        "seq": 1,
+        "content": "第一个主观点：重要",
+        "tags": ["测试"],
+        "important": "是"
+      },
+      {
+        "seq": 2,
+        "content": "第二个主观点：不重要",
+        "tags": ["测试"],
+        "important": "否"
+      },
+      {
+        "seq": 3,
+        "content": "第三个主观点：布尔 true",
+        "tags": ["测试"],
+        "important": true
+      }
+    ],
+    "concepts": [],
+    "resources": []
+  }
+}
