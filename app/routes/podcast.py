@@ -48,12 +48,17 @@ def save_podcast(request: PodcastSaveRequest) -> PodcastSaveResponse:
         # === Step 2: 创建主观点表记录 ===
         main_point_seq_to_record_id = {}
         for mp in request.structured_json.main_points:
+            # 将标签列表转为逗号分隔的字符串
+            tags_str = ",".join(mp.tags) if mp.tags else ""
+            # 将布尔值转为单选选项文本（假设单选选项为"是"/"否"）
+            important_option = "是" if mp.important else "否"
+
             mp_fields = {
                 # "所属播客": [[podcast_record_id]],  # 关联字段暂未实现
-                "主观点序号": mp.seq,
+                "主观点序号": str(mp.seq),  # 文本字段，需要字符串
                 "主观点内容": mp.content,
-                "主观点标签": mp.tags,
-                "重要": mp.important,
+                "主观点标签": tags_str,  # 文本字段，需要字符串
+                "重要": important_option,  # 单选字段，需要选项文本
             }
             mp_record_id = feishu_client.add_record(
                 config.FEISHU_DATABASE_ID,
