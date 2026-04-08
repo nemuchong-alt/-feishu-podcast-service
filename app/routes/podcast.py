@@ -1,5 +1,6 @@
 # app/routes/podcast.py
 import logging
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from app.schemas.podcast import (
     PodcastSaveRequest,
@@ -11,6 +12,20 @@ from app.feishu import feishu_client
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def resolve_field_name(
+    database_id: str,
+    table_id: str,
+    candidates: list[str],
+) -> Optional[str]:
+    """Pick the first existing field name from a candidate list."""
+    fields = feishu_client.list_fields(database_id, table_id)
+    existing_names = {item.get("field_name") for item in fields}
+    for candidate in candidates:
+        if candidate in existing_names:
+            return candidate
+    return None
 
 
 def save_podcast(request: PodcastSaveRequest) -> PodcastSaveResponse:
@@ -32,12 +47,21 @@ def save_podcast(request: PodcastSaveRequest) -> PodcastSaveResponse:
         )
 
     try:
+        summary_field_name = resolve_field_name(
+            config.FEISHU_DATABASE_ID,
+            config.FEISHU_TABLE_ID_PODCAST,
+            ["总结", "个人备注"],
+        )
+
         # === Step 1: 创建播客主表记录 ===
         podcast_fields = {
             "播客-期数": request.podcast_title,
-            "总结": request.structured_json.podcast.summary,
             "推荐复听程度": request.structured_json.podcast.relisten_level,
         }
+        if summary_field_name:
+            podcast_fields[summary_field_name] = request.structured_json.podcast.summary
+        else:
+            logger.warning("播客主表未找到 summary 对应字段，已跳过写入总结")
         podcast_record_id = feishu_client.add_record(
             config.FEISHU_DATABASE_ID,
             config.FEISHU_TABLE_ID_PODCAST,

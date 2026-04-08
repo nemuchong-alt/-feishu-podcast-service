@@ -111,6 +111,34 @@ class FeishuClient:
             logger.info(f"记录添加成功，record_id: {record_id}")
             return record_id
 
+    def list_fields(self, database_id: str, table_id: str) -> list[dict]:
+        """获取表格字段列表。"""
+        url = f"{config.FEISHU_API_BASE}/bitable/v1/apps/{database_id}/tables/{table_id}/fields"
+
+        logger.info("========== 飞书 API 调用 ==========")
+        logger.info(f"API Endpoint: /bitable/v1/apps/{{database_id}}/tables/{{table_id}}/fields")
+        logger.info("请求方法: GET")
+        logger.info(f"请求 URL: {url}")
+        logger.info("====================================")
+
+        with httpx.Client() as client:
+            response = client.get(url, headers=self._get_headers())
+            status_code = response.status_code
+            response_body = response.text
+
+            logger.info("========== 飞书 API 响应 ==========")
+            logger.info(f"HTTP 状态码: {status_code}")
+            logger.info(f"响应体: {response_body}")
+            logger.info("====================================")
+
+            data = response.json()
+            if data.get("code") != 0:
+                raise Exception(
+                    f"获取字段列表失败: code={data.get('code')}, msg={data.get('msg', '未知错误')}"
+                )
+
+            return data["data"].get("items", [])
+
     def get_record(self, database_id: str, table_id: str, record_id: str) -> dict:
         """获取单条记录"""
         url = f"{config.FEISHU_API_BASE}/bitable/v1/apps/{database_id}/tables/{table_id}/records/{record_id}"
